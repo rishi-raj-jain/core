@@ -22,6 +22,7 @@ import {
   SUPPORTS_ACL,
   AWS_ACCESS_KEY,
   AWS_ACCESS_SECRET,
+  FORCE_PATH_STYLE,
 } from './env.js'
 import { deleteS3Objects } from '../../helpers.js'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
@@ -36,6 +37,7 @@ const client = new S3Client({
   },
   endpoint: S3_ENDPOINT,
   region: S3_REGION,
+  forcePathStyle: FORCE_PATH_STYLE,
 })
 
 test.group('S3 Driver | getUrl', (group) => {
@@ -133,8 +135,16 @@ test.group('S3 Driver | getSignedUrl', (group) => {
     const fileURL = new URL(await s3fs.getSignedUrl(key))
     const fileContents = await got.get(fileURL)
 
-    assert.include(fileURL.hostname, S3_BUCKET)
-    assert.equal(fileURL.pathname, `/${key}`)
+    /**
+     * Path-style URLs keep the bucket name in the pathname, whereas
+     * virtual-hosted-style URLs move it into the hostname
+     */
+    if (FORCE_PATH_STYLE) {
+      assert.equal(fileURL.pathname, `/${S3_BUCKET}/${key}`)
+    } else {
+      assert.include(fileURL.hostname, S3_BUCKET)
+      assert.equal(fileURL.pathname, `/${key}`)
+    }
     assert.isTrue(fileURL.searchParams.has('X-Amz-Signature'))
     assert.isTrue(fileURL.searchParams.has('X-Amz-Expires'))
 
@@ -227,8 +237,16 @@ test.group('S3 Driver | getSignedUploadUrl', (group) => {
     await got.put(uploadURL, { body: 'hello world' })
     const fileContents = await got.get(await s3fs.getSignedUrl(key))
 
-    assert.include(uploadURL.hostname, S3_BUCKET)
-    assert.equal(uploadURL.pathname, `/${key}`)
+    /**
+     * Path-style URLs keep the bucket name in the pathname, whereas
+     * virtual-hosted-style URLs move it into the hostname
+     */
+    if (FORCE_PATH_STYLE) {
+      assert.equal(uploadURL.pathname, `/${S3_BUCKET}/${key}`)
+    } else {
+      assert.include(uploadURL.hostname, S3_BUCKET)
+      assert.equal(uploadURL.pathname, `/${key}`)
+    }
     assert.isTrue(uploadURL.searchParams.has('X-Amz-Signature'))
     assert.isTrue(uploadURL.searchParams.has('X-Amz-Expires'))
 

@@ -16,6 +16,7 @@ import {
   S3_ENDPOINT,
   S3_REGION,
   SUPPORTS_ACL,
+  FORCE_PATH_STYLE,
 } from './env.js'
 import { S3Client } from '@aws-sdk/client-s3'
 
@@ -29,6 +30,7 @@ const client = new S3Client({
   },
   endpoint: S3_ENDPOINT,
   region: S3_REGION,
+  forcePathStyle: FORCE_PATH_STYLE,
 })
 test.group('S3 Driver | bucket', () => {
   test('switch bucket', async ({ assert }) => {

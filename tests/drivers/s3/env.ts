@@ -10,7 +10,7 @@
 import { Env } from '@adonisjs/env'
 
 const env = await Env.create(new URL('../../../', import.meta.url), {
-  S3_SERVICE: Env.schema.enum(['r2', 'do'] as const),
+  S3_SERVICE: Env.schema.enum(['r2', 'do', 'neon'] as const),
   S3_BUCKET: Env.schema.string(),
   S3_OTHER_BUCKET: Env.schema.string(),
   S3_ACCESS_KEY: Env.schema.string(),
@@ -21,7 +21,12 @@ const env = await Env.create(new URL('../../../', import.meta.url), {
 })
 
 export const S3_SERVICE = env.get('S3_SERVICE')
-export const SUPPORTS_ACL = S3_SERVICE !== 'r2'
+export const SUPPORTS_ACL = S3_SERVICE !== 'r2' && S3_SERVICE !== 'neon'
+
+/**
+ * Neon Object Storage only supports path-style addressing
+ */
+export const FORCE_PATH_STYLE = S3_SERVICE === 'neon'
 export const S3_BUCKET = env.get('S3_BUCKET')
 export const S3_OTHER_BUCKET = env.get('S3_OTHER_BUCKET')
 export const S3_CDN_URL = env.get('S3_CDN_URL')

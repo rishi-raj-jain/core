@@ -20,6 +20,7 @@ import {
   AWS_ACCESS_KEY,
   AWS_ACCESS_SECRET,
   S3_OTHER_BUCKET,
+  FORCE_PATH_STYLE,
 } from './env.js'
 import { deleteS3Objects } from '../../helpers.js'
 
@@ -33,6 +34,7 @@ const client = new S3Client({
   },
   endpoint: S3_ENDPOINT,
   region: S3_REGION,
+  forcePathStyle: FORCE_PATH_STYLE,
 })
 
 test.group('S3 Driver | copy', (group) => {
